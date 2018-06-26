@@ -215,7 +215,7 @@ function GetLab {
     #>
     [CmdletBinding()]
     param($LabName)
-    $lab = Find-AzureRmResource -ResourceType "Microsoft.DevTestLab/labs" -ResourceNameContains $LabName  | where ResourceName -EQ "$LabName"
+    $lab = Get-AzureRmResource -ResourceType "Microsoft.DevTestLab/labs" -ResourceNameContains $LabName  | where ResourceName -EQ "$LabName"
     LogOutput "Lab: $lab"
     return $lab
 }
@@ -237,7 +237,7 @@ function GetAllLabVMs {
     [CmdletBinding()]
     param($LabName)
     
-    return Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs/virtualmachines' -ResourceNameContains "$LabName/" | ? { $_.ResourceName -like "$LabName/*" }
+    return Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs/virtualmachines' -ResourceNameContains "$LabName/" | ? { $_.ResourceName -like "$LabName/*" }
 } 
 
 # Get the expanded props as well (but slowly)
@@ -258,7 +258,7 @@ function GetAllLabVMsExpanded {
     [CmdletBinding()]
     param($LabName)
 
-    return Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs/virtualmachines' -ResourceNameContains "$LabName/" -ExpandProperties | ? { $_.ResourceName -like "$LabName/*" }    
+    return Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs/virtualmachines' -ResourceNameContains "$LabName/" -ExpandProperties | ? { $_.ResourceName -like "$LabName/*" }    
 }
 
 # Get to the RG name from lab name (it will break if multiple labs with same name are allowed)
@@ -307,7 +307,7 @@ Function WhoAmI {
     .NOTES
 
     #>
-    $AutomationResource = Find-AzureRmResource -ResourceType Microsoft.Automation/AutomationAccounts
+    $AutomationResource = Get-AzureRmResource -ResourceType Microsoft.Automation/AutomationAccounts
 
     foreach ($Automation in $AutomationResource) {
         $Job = Get-AzureRmAutomationJob -ResourceGroupName $Automation.ResourceGroupName -AutomationAccountName $Automation.Name -Id $PSPrivateMetadata.JobId.Guid -ErrorAction SilentlyContinue

@@ -29,7 +29,7 @@ foreach ($selectedLab in $sortedLabList){
 
     # Get the list of images in the current lab
     SelectSubscription $selectedLab.SubscriptionId
-    $selectedLabRG = (Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $selectedLab.LabName}).ResourceGroupName
+    $selectedLabRG = (Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $selectedLab.LabName}).ResourceGroupName
 
     if($selectedLabRG)
     {

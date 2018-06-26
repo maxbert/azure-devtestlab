@@ -65,7 +65,7 @@ else {
     $SubscriptionID = (Get-AzureRmContext).Subscription.SubscriptionId
 }
 
-$ResourceGroupName = (Find-AzureRmResource -ResourceType "Microsoft.DevTestLab/labs" -ResourceNameContains $LabName).ResourceGroupName
+$ResourceGroupName = (Get-AzureRmResource -ResourceType "Microsoft.DevTestLab/labs" -ResourceNameContains $LabName).ResourceGroupName
 
 # get the ObjectId from the AD group name
 $objectId = Get-AzureRmADGroup -SearchString $ADGroupName

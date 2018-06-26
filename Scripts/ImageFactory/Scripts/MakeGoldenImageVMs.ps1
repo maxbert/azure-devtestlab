@@ -115,7 +115,7 @@ foreach ($job in $jobs){
 Remove-Job -Job $jobs
 
 #get machines that show up in the VM blade so we can apply the GoldenImage Tag
-$allVms = Find-AzureRmResource -ResourceType "Microsoft.Compute/virtualMachines"
+$allVms = Get-AzureRmResource -ResourceType "Microsoft.Compute/virtualMachines"
 
 for ($index = 0; $index -lt $createdVms.Count; $index++){
     $currentVmName = $createdVms[$index]

@@ -24,7 +24,7 @@ foreach ($subscription in $SubscriptionIds) {
     }
 
     # Give me all labs in the subscription
-    $devTestLabs = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs'
+    $devTestLabs = Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs'
 
     foreach ($devTestLab in $devTestLabs) {
         

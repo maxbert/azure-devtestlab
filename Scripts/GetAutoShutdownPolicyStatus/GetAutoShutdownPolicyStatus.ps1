@@ -30,10 +30,10 @@ foreach ($subscriptionId in $SubscriptionIds) {
     # Give me all labs in the subscription
     if ($LabName) {
         Write-Verbose "Getting lab $($LabName)"
-        [Array] $devTestLabs = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' -ResourceNameEquals $LabName
+        [Array] $devTestLabs = Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' -ResourceNameEquals $LabName
     }
     else {
-        [Array] $devTestLabs = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs'
+        [Array] $devTestLabs = Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs'
     }
     
     foreach ($devTestLab in $devTestLabs) {

@@ -124,7 +124,7 @@ function EnsureRootContainerExists ($labStorageInfo)
 
 function GetImageInfosForLab ($DevTestLabName) 
 {
-    $lab = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $DevTestLabName}
+    $lab = Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $DevTestLabName}
     $labRgName= $lab.ResourceGroupName
     $sourceLab = Get-AzureRmResource -ResourceName $DevTestLabName -ResourceGroupName $labRgName -ResourceType 'Microsoft.DevTestLab/labs'
     $storageAcctValue = $sourceLab.Properties.artifactsStorageAccount

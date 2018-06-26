@@ -10,12 +10,12 @@ Param(
     [Parameter(Mandatory)]
     [string]
     $LabName = '<LabName>',
-    
+
     # Enter the resource group name of the Lab where you want to copy the VHD file.
     [Parameter(Mandatory)]
     [string]
     $LabResourceGroupName = '<LabResourceGroupName>',
-    
+
     # Enter the name of the VM. The VHD file associated with the VM will be copied to the Lab.
     [Parameter(Mandatory)]
     [string]
@@ -26,7 +26,7 @@ Param(
     [Parameter(Mandatory)]
     [string]
     $VHDFileName = '<VHDFileName>.vhd',
-    
+
     # If you have created the VM from management portal or created the VM using Service Management
     # Stack from preview portal then enter specify the switch as -Classic; otherwise, do not specify
     # it and it will default to $false. If you have created the VM inside a Lab then please DO NOT
@@ -81,7 +81,7 @@ function Handle-LastError
     {
         Write-Host -Object "`nERROR: $message" -ForegroundColor Red
     }
-    
+
     # IMPORTANT NOTE: Throwing a terminating error (using $ErrorActionPreference = "Stop") still
     # returns exit code zero from the PowerShell script when using -File. The workaround is to
     # NOT use -File when calling this script and leverage the try-finally block and return
@@ -118,12 +118,12 @@ function Get-AzureDtlVirtualMachine
         $resourceType = 'Microsoft.ClassicCompute/virtualMachines'
     }
 
-    $vm = Find-AzureRmResource -ResourceType $resourceType -ResourceNameEquals "$Name" | Select -First 1
+    $vm = Get-AzureRmResource -ResourceType $resourceType -ResourceNameEquals "$Name" | Select -First 1
     if (-not $vm)
     {
         throw "Unable to find virtual machine with name '$Name'."
     }
-    
+
     return $vm
 }
 
@@ -153,7 +153,7 @@ function Get-AzureDtlVirtualMachineCopyContext
     else
     {
         $properties = (Get-AzureRMResource -ResourceType $VM.ResourceType -ResourceName $VM.ResourceName -ResourceGroupName $VM.ResourceGroupName).Properties
-        
+
         if ($properties.storageProfile.osDisk.managedDisk.id)
         {
             $managedDiskId = $properties.storageProfile.osDisk.managedDisk.id
@@ -167,11 +167,11 @@ function Get-AzureDtlVirtualMachineCopyContext
             $vmCopyContext.SourceUri = $properties.storageProfile.osDisk.vhd.uri
             [System.Uri] $uri = $vmCopyContext.SourceUri
             $vmCopyContext.StorageAccountName = $uri.Host.Split('.')[0]
-            $vmStorageAccount = Find-AzureRmResource -ResourceNameEquals $vmCopyContext.StorageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
+            $vmStorageAccount = Get-AzureRmResource -ResourceNameEquals $vmCopyContext.StorageAccountName -ResourceType 'Microsoft.Storage/storageAccounts'
             $vmCopyContext.StorageAccountKey = (Get-AzureRMStorageAccountKey -Name $vmCopyContext.StorageAccountName -ResourceGroupName $vmStorageAccount.ResourceGroupName)[0].Value
         }
     }
-        
+
     return $vmCopyContext
 }
 
@@ -216,7 +216,7 @@ function Copy-AzureDtlVirtualMachineVhd
     $copyStatus = $copyHandle | Get-AzureStorageBlobCopyState
     while ($copyStatus.Status -eq "Pending")
     {
-        $copyStatus = $copyHandle | Get-AzureStorageBlobCopyState 
+        $copyStatus = $copyHandle | Get-AzureStorageBlobCopyState
         $perComplete = ($copyStatus.BytesCopied / $copyStatus.TotalBytes) * 100
         Write-Progress -Activity "Copying blob ... " -Status "Percentage Complete" -PercentComplete "$perComplete"
         Start-Sleep 10
@@ -235,14 +235,13 @@ try
     $done = 'done.'
 
     Write-Host "Selecting subscription '$SubscriptionId' ... " -NoNewline
-    Select-AzureSubscription -SubscriptionId $SubscriptionId -ErrorAction SilentlyContinue | Out-Null
     Select-AzureRMSubscription -SubscriptionId $SubscriptionId -ErrorAction SilentlyContinue | Out-Null
     Write-Host $done
-    
+
     Write-Host "Getting lab '$LabName' under resource group '$LabResourceGroupName' ... " -NoNewline
     $lab = Get-AzureDtlLab -Name "$LabName" -ResourceGroupName "$LabResourceGroupName"
     Write-Host $done
-    
+
     Write-Host 'Fetching lab storage account information ... ' -NoNewline
     $labStorageAccountName = $lab.Properties.DefaultStorageAccount.Split('/')[-1]
     $labStorageAccountKey = (Get-AzureRMStorageAccountKey -Name $labStorageAccountName -ResourceGroupName $LabResourceGroupName)[0].Value

@@ -42,14 +42,14 @@ function ValidateParameters {
         throw [System.ArgumentException] "Unfortunately the logged in user doesn't have access to subscription Id $SourceSubscriptionId .  Perhaps you need to login with Add-AzureRmAccount?"
     }
 
-    $sourceLab = Find-AzureRmResource -ResourceNameEquals $SourceDevTestLabName -ResourceType "Microsoft.DevTestLab/labs"
+    $sourceLab = Get-AzureRmResource -ResourceNameEquals $SourceDevTestLabName -ResourceType "Microsoft.DevTestLab/labs"
 
     if ($sourceLab -eq $null) {
         throw [System.ArgumentException] "'$SourceDevTestLabName' Lab doesn't exist, cannot copy any Virtual Machines from this source"
     }
 
     if ($SourceVirtualMachineName -ne $null -and $SourceVirtualMachineName -ne '') {
-        $sourceVirtualMachine = Find-AzureRmResource -ResourceNameEquals "$SourceDevTestLabName/$SourceVirtualMachineName" -ResourceType "Microsoft.DevTestLab/labs/virtualmachines"
+        $sourceVirtualMachine = Get-AzureRmResource -ResourceNameEquals "$SourceDevTestLabName/$SourceVirtualMachineName" -ResourceType "Microsoft.DevTestLab/labs/virtualmachines"
         if ($sourceVirtualMachine -eq $null) {
             throw [System.ArgumentException] "$SourceVirtualMachineName VM doesn't exist in $SourceDevTestLabName , unable to copy this VM to destination lab $DestinationDevTestLabName"
         }
@@ -71,7 +71,7 @@ function ValidateParameters {
         }
     }
 
-    $destinationLab = Find-AzureRmResource -ResourceNameEquals $DestinationDevTestLabName -ResourceType "Microsoft.DevTestLab/labs"
+    $destinationLab = Get-AzureRmResource -ResourceNameEquals $DestinationDevTestLabName -ResourceType "Microsoft.DevTestLab/labs"
     if ($destinationLab -eq $null) {
         throw [System.ArgumentException] "'$DestinationDevTestLabName' Lab doesn't exist, cannot copy any Virtual Machines to this destination"
     }
@@ -152,8 +152,8 @@ try {
 
     # Switch back to the source subscription to get the list of VMs
     SelectSubscription $SourceSubscriptionId
-    $sourceLab = Find-AzureRmResource -ResourceNameEquals $SourceDevTestLabName -ResourceType "Microsoft.DevTestLab/labs"
-    $sourceVirtualMachine = Find-AzureRmResource -ResourceNameEquals "$SourceDevTestLabName/$SourceVirtualMachineName" -ResourceType "Microsoft.DevTestLab/labs/virtualmachines"
+    $sourceLab = Get-AzureRmResource -ResourceNameEquals $SourceDevTestLabName -ResourceType "Microsoft.DevTestLab/labs"
+    $sourceVirtualMachine = Get-AzureRmResource -ResourceNameEquals "$SourceDevTestLabName/$SourceVirtualMachineName" -ResourceType "Microsoft.DevTestLab/labs/virtualmachines"
 
     $sourceResourceIds = @()
 
@@ -174,7 +174,7 @@ try {
     $profilePath = Join-Path $PSScriptRoot "profile.json"
     Save-AzureRmContext -Path $profilePath -Force
 
-    $destinationLab = Find-AzureRmResource -ResourceNameEquals $DestinationDevTestLabName -ResourceType "Microsoft.DevTestLab/labs"
+    $destinationLab = Get-AzureRmResource -ResourceNameEquals $DestinationDevTestLabName -ResourceType "Microsoft.DevTestLab/labs"
 
     # kick off all the jobs in parallel and then wait for results
     $jobs = @()

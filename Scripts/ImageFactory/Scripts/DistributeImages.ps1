@@ -77,7 +77,7 @@ SelectSubscription $SubscriptionId
 
 SaveProfile
 
-$sourceLab = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $DevTestLabName}
+$sourceLab = Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $DevTestLabName}
 $labStorageInfo = GetLabStorageInfo $sourceLab
 $sourceImageInfos = GetImageInfosForLab $DevTestLabName
 $thingsToCopy = New-Object System.Collections.ArrayList
@@ -98,7 +98,7 @@ foreach ($targetLabInfo in $sortedLabList){
 
         if($copyToLab -eq $true) {
             SelectSubscription $targetLabInfo.SubscriptionId
-            $targetLabRG = (Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $targetLabName}).ResourceGroupName
+            $targetLabRG = (Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $targetLabName}).ResourceGroupName
             if(!$targetLabRG)
             {            
                 Write-Error ("Unable to find a lab named $targetLabName in subscription with id " + $targetLabInfo.SubscriptionId)
@@ -247,7 +247,7 @@ foreach ($copyInfo in $thingsToCopy)
 {
     SelectSubscription $copyInfo.targetSubscriptionId
     #remove the root container from the target labs since we dont need it any more
-    $targetLab = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $copyInfo.targetLabName}
+    $targetLab = Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $copyInfo.targetLabName}
     $targetStorageInfo = GetLabStorageInfo $targetLab
     $storageContext = New-AzureStorageContext -StorageAccountName $targetStorageInfo.storageAcctName -StorageAccountKey $targetStorageInfo.storageAcctKey
     $rootContainerName = 'imagefactoryvhds'

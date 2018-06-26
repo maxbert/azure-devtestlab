@@ -9,7 +9,7 @@ Import-Module $modulePath
 
 SaveProfile
 
-$lab = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $DevTestLabName}
+$lab = Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $DevTestLabName}
 $labRgName= $lab.ResourceGroupName
 $labStorageInfo = GetLabStorageInfo $lab
 EnsureRootContainerExists $labStorageInfo

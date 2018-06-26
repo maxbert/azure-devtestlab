@@ -76,14 +76,14 @@ LoadProfile
 Write-Output "Starting Deploy for $TemplateFilePath"
 
 #if the VM already exists then we fail out.
-$existingVms = Find-AzureRmResource -ResourceType "Microsoft.DevTestLab/labs/virtualMachines" -ResourceNameContains $DevTestLabName | Where-Object { $_.Name -eq "$DevTestLabName/$vmName"}
+$existingVms = Get-AzureRmResource -ResourceType "Microsoft.DevTestLab/labs/virtualMachines" -ResourceNameContains $DevTestLabName | Where-Object { $_.Name -eq "$DevTestLabName/$vmName"}
 if($existingVms.Count -ne 0){
     Write-Error "Factory VM creation failed because there is an existing VM named $vmName in Lab $DevTestLabName"
     return ""
 }
 else {
     $deployName = "Deploy-$vmName"
-    $ResourceGroupName = (Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $DevTestLabName}).ResourceGroupName
+    $ResourceGroupName = (Get-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' | Where-Object { $_.Name -eq $DevTestLabName}).ResourceGroupName
     
     if($includeSysprep)
     {
@@ -103,7 +103,7 @@ else {
 
     if($vmDeployResult.ProvisioningState -eq "Succeeded"){
         Write-Output "Determining artifact status."
-        $existingVm = Find-AzureRmResource -ResourceType "Microsoft.DevTestLab/labs/virtualMachines" -ResourceNameContains $DevTestLabName | Where-Object { $_.Name -eq "$DevTestLabName/$vmName"}
+        $existingVm = Get-AzureRmResource -ResourceType "Microsoft.DevTestLab/labs/virtualMachines" -ResourceNameContains $DevTestLabName | Where-Object { $_.Name -eq "$DevTestLabName/$vmName"}
 
         #Determine if artifacts succeeded
         $filter = '$expand=Properties($expand=ComputeVm,NetworkInterface,Artifacts)'

@@ -56,7 +56,7 @@ $modulePath = Join-Path (Split-Path ($Script:MyInvocation.MyCommand.Path)) "Dist
 Import-Module $modulePath
 SaveProfile
 
-$resourceGroups = Find-AzureRmResourceGroup | Where-Object {$_.Name.StartsWith($DevTestLabName, 'CurrentCultureIgnoreCase')}
+$resourceGroups = Get-AzureRmResourceGroup | Where-Object {$_.Name.StartsWith($DevTestLabName, 'CurrentCultureIgnoreCase')}
 foreach($resGroup in $resourceGroups)
 {
     # We have deployed a lot of artifacts. Remove those deployments so we dont hit the 800 deployment limit for our lab RGs

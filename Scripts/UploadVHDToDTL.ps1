@@ -3,49 +3,49 @@
     Description
     ===========
 
-    - This script uploads a user-specified VHD to a Dev/Test lab:  
+    - This script uploads a user-specified VHD to a Dev/Test lab:
         - Authenticates user against Azure-AD.
         - Copies VHD to a local staging area.
         - Extract the storage account and container details associated with the Dev/Test lab instance.
         - Uploads VHD to the storage container associated with the lab instance.
-        - Deletes the local copy of the VHD from the staging area. 
+        - Deletes the local copy of the VHD from the staging area.
 
     - The logs are generated at : %USERPROFILE%\UploadVHDToDTL\Logs\{TimeStamp}.log
 
 
     Usage examples
     ==============
-    
+
     Powershell -executionpolicy bypass -file UploadVHDToDTL.ps1 -LabName <lab name> -AzureSubscriptionId <subscription id> -VHDFullPath <full-path to vhd>
 
 
     Pre-Requisites
     ==============
 
-    - Please ensure that the latest Azure Powershell has been installed on the machine on which 
-      this script will be executed. 
+    - Please ensure that the latest Azure Powershell has been installed on the machine on which
+      this script will be executed.
       More details: https://azure.microsoft.com/en-us/documentation/articles/powershell-install-configure/
     - Please ensure that the powershell execution policy is set to unrestricted or bypass.
 
 
     Known issues / Caveats
     ======================
-    
+
     - No known issues.
 
 
     Coming soon / planned work
     ==========================
-    
-    - Make the authentication scenario (via Add-AzureAccount cmdlet) more robust. Handle user-cancellation, 2FA pin 
+
+    - Make the authentication scenario (via Add-AzureAccount cmdlet) more robust. Handle user-cancellation, 2FA pin
       etc more robustly.
-    - Automatically detect and convert .VHDX files into .VHD files (assuming HyperV cmdlets are 
+    - Automatically detect and convert .VHDX files into .VHD files (assuming HyperV cmdlets are
       available).
     - Support service principal for automation:
         - Point to MSDN docs for details on creating service principal.
-        - Use parameter sets. 
+        - Use parameter sets.
     - Support copying of VHDs from azure blob container and azure file shares.
-    - Support auto-creation of VM templates. 
+    - Support auto-creation of VM templates.
 
 ##################################################################################################>
 
@@ -68,17 +68,17 @@ Param(
     # Note: Currently we only support VHDs that are available from:
     # - local drives (e.g. c:\somefolder\somefile.ext)
     # - UNC shares (e.g. \\someshare\somefolder\somefile.ext).
-    # - Network mapped drives (e.g. net use z: \\someshare\somefolder && z:\somefile.ext). 
+    # - Network mapped drives (e.g. net use z: \\someshare\somefolder && z:\somefile.ext).
     [ValidateNotNullOrEmpty()]
     [string]
     $VHDFullPath,
 
     # [Optional] The name that will be assigned to VHD once uploded to the Dev/Test lab instance.
-    # The name should be in a "<filename>.vhd" format (E.g. "WinServer2012-VS2015.VHD"). 
+    # The name should be in a "<filename>.vhd" format (E.g. "WinServer2012-VS2015.VHD").
     [string]
     $VHDFriendlyName,
 
-    # [Optional] If this switch is specified, then any VHDs copied to the staging area (if any) 
+    # [Optional] If this switch is specified, then any VHDs copied to the staging area (if any)
     # will NOT be deleted.
     # Note: The default behavior is to delete all VHDs from the staging area.
     [switch]
@@ -117,7 +117,7 @@ $ExitCode = 0
 
 ##################################################################################################
 
-# 
+#
 # Description:
 #  - Displays the script argument values (default or user-supplied).
 #
@@ -128,8 +128,8 @@ $ExitCode = 0
 #  - N/A.
 #
 # Notes:
-#  - Please ensure that the Initialize() method has been called at least once before this 
-#    method. Else this method can only write to console and not to log files. 
+#  - Please ensure that the Initialize() method has been called at least once before this
+#    method. Else this method can only write to console and not to log files.
 #
 
 function DisplayArgValues
@@ -152,9 +152,9 @@ function DisplayArgValues
 
 ##################################################################################################
 
-# 
+#
 # Description:
-#  - Creates the folder structure which will be used for dumping logs and staging local copies of 
+#  - Creates the folder structure which will be used for dumping logs and staging local copies of
 #    VHDs.
 #
 # Parameters:
@@ -187,7 +187,7 @@ function InitializeFolders
 
 ##################################################################################################
 
-# 
+#
 # Description:
 #  - Writes specified string to the console as well as to the script log (indicated by $ScriptLog).
 #
@@ -215,7 +215,7 @@ function WriteLog
 
 ##################################################################################################
 
-# 
+#
 # Description:
 #  - Verifies whether the user-specified VHD is accessible or not.
 #
@@ -242,12 +242,12 @@ function EnsureVHDAccessible
     else
     {
         Write-Error $("Error! Specified VHD is not accessible: " + $VHDFullPath)
-    } 
+    }
 }
 
 ##################################################################################################
 
-# 
+#
 # Description:
 #  - Authenticates against Azure-AD using credentials passed in by user.
 #  - Also switches mode to AzureResourceManager and sets the current subscription.
@@ -270,14 +270,14 @@ function AuthenticateToAzureAD
 
     # Switch mode to Azure RM and select the subscription ID specified by the user.
     Switch-AzureMode -Name AzureResourceManager | Out-Null
-    Select-AzureSubscription -SubscriptionId $AzureSubscriptionId | Out-Null
+    Select-AzureRMSubscription -SubscriptionId $AzureSubscriptionId | Out-Null
 }
 
 ##################################################################################################
 
-# 
+#
 # Description:
-#  - Checks whether the specified file path refers to a local or a remote (either a UNC share or 
+#  - Checks whether the specified file path refers to a local or a remote (either a UNC share or
 #    a network-mapped drive) file.
 #
 # Parameters:
@@ -288,7 +288,7 @@ function AuthenticateToAzureAD
 #  - True if the file is remote. False otherwise.
 #
 # Notes:
-#  - Files that are served via http or https (e.g. files stored in azure storage blobs) are 
+#  - Files that are served via http or https (e.g. files stored in azure storage blobs) are
 #    intentionally not supported.
 #
 
@@ -305,7 +305,7 @@ function IsFileRemote
     }
 
     # A more formal check for UNC paths
-    $uri = New-Object -TypeName System.Uri -ArgumentList @($filePath) 
+    $uri = New-Object -TypeName System.Uri -ArgumentList @($filePath)
     if (($null -ne $uri) -and ($true -eq $uri.IsUnc))
     {
         return $true
@@ -317,26 +317,26 @@ function IsFileRemote
     {
         return $true
     }
-            
+
     # else just assume it is local
     return $false
 }
 
 ##################################################################################################
 
-# 
+#
 # Description:
-#  - If the user-specified VHD is a remote file, then this method copies the VHD to the 
+#  - If the user-specified VHD is a remote file, then this method copies the VHD to the
 #    local staging area (this enables faster uploads to Dev/test lab).
 #
 # Parameters:
 #  - None.
 #
 # Return:
-#  - If copied to the local staging area, then this method returns the full path to the 
+#  - If copied to the local staging area, then this method returns the full path to the
 #    copied VHD in the local staging folder.
 #  - If not copied to staging area, then this method simply returns the original full path
-#    to the local VHD. 
+#    to the local VHD.
 #
 # Notes:
 #  - N/A.
@@ -368,13 +368,13 @@ function CopyVHDToStagingIfNeeded
 
 ##################################################################################################
 
-# 
+#
 # Description:
 #  - Copies the VHD from the local staging area into the lab's storage container.
 #
 # Parameters:
-#  - $vhdLocalPath: The full-path to the local copy of the VHD. 
-#  - $labStorageAccountName: The name of the Dev/Test lab instance's default storage account.  
+#  - $vhdLocalPath: The full-path to the local copy of the VHD.
+#  - $labStorageAccountName: The name of the Dev/Test lab instance's default storage account.
 #  - $labStorageAccountKey: The access key to the Dev/Test lab instance's default storage account.
 #  - $labResourceGroupName: The name of the resource group associated with the DTL lab instance.
 #
@@ -394,10 +394,10 @@ function UploadVHDToDTL
         [ValidateNotNullOrEmpty()] [string] $labResourceGroupName
     )
 
-    $context = New-AzureStorageContext –StorageAccountName $labStorageAccountName -StorageAccountKey $labStorageAccountKey
+    $context = New-AzureStorageContext ï¿½StorageAccountName $labStorageAccountName -StorageAccountKey $labStorageAccountKey
 
-    # Compute the destination path. If the user has specified a 
-    # friendly name for the VHD, let us use it. 
+    # Compute the destination path. If the user has specified a
+    # friendly name for the VHD, let us use it.
     if ([string]::IsNullOrEmpty($VHDFriendlyName))
     {
         $vhdFileName = Split-Path -Path $VHDFullPath -Leaf
@@ -412,7 +412,7 @@ function UploadVHDToDTL
     $containerURI = (Get-AzureStorageContainer -Name $DTLDefaultContainerName -Context $context).CloudBlobContainer.Uri.AbsoluteUri.TrimEnd("/")
     WriteLog $(" - Endpoint URI : " + $containerURI)
     WriteLog "Success."
-    
+
     # compute the final destination of the VHD
     $vhdDestinationPath = $($containerURI + "/" + $vhdFileName)
 
@@ -440,7 +440,7 @@ try
 
     # Extract the details associated with the Dev/Test lab instance.
     WriteLog "Extracting Dev/Test Lab details..."
-    $lab = Get-AzureResource -ResourceName $LabName -OutputObjectFormat New  
+    $lab = Get-AzureResource -ResourceName $LabName -OutputObjectFormat New
     WriteLog $(" - Lab Name : "  + $lab.Name)
     WriteLog $(" - Lab Resource Id : "  + $lab.ResourceId)
     WriteLog $(" - Lab Resource Group Name : "  + $lab.ResourceGroupName)
@@ -455,13 +455,13 @@ try
 
     # Extract the storage account associated with the Dev/Test lab instance.
     WriteLog "Extracting the lab's storage account key..."
-    $labStorageAccountKey = (Get-AzureStorageAccountKey -StorageAccountName $labStorageAccountName -ResourceGroupName $lab.ResourceGroupName).Key1 
+    $labStorageAccountKey = (Get-AzureStorageAccountKey -StorageAccountName $labStorageAccountName -ResourceGroupName $lab.ResourceGroupName).Key1
     WriteLog "Success. Storage account key extracted."
 
     # Copy the VHD into the staging area if needed
-    $vhdLocalPath = CopyVHDToStagingIfNeeded 
+    $vhdLocalPath = CopyVHDToStagingIfNeeded
 
-    # Finally upload the VHD to the lab's storage container. 
+    # Finally upload the VHD to the lab's storage container.
     UploadVHDToDTL -labStorageAccountName $labStorageAccountName -labStorageAccountKey $labStorageAccountKey -labResourceGroupName $lab.ResourceGroupName -vhdLocalPath $vhdLocalPath
 }
 
@@ -474,9 +474,9 @@ catch
         Write-Host $errMsg
     }
 
-    # Important note: Throwing a terminating error (using $ErrorActionPreference = "stop") still returns exit 
-    # code zero from the powershell script. The workaround is to use try/catch blocks and return a non-zero 
-    # exit code from the catch block. 
+    # Important note: Throwing a terminating error (using $ErrorActionPreference = "stop") still returns exit
+    # code zero from the powershell script. The workaround is to use try/catch blocks and return a non-zero
+    # exit code from the catch block.
     $ExitCode = -1
 }
 
